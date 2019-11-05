@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title><%= title %></title>
+    <link rel="stylesheet" href="stylesheets/style.css" type="text/css">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+</head>
+<body>
+<header>
+    <%include header.ejs%>
+</header>
+<div class="container">
+    <table class="table table-striped">
+        <tr>
+            <th>번호</th>
+            <th>제목</th>
+            <th>글쓴이</th>
+            <th>수정일</th>
+            <th>조회수</th>
+        </tr>
+        <%
+        for(let i = 0; i < rows.length; i++){
+        %>
+            <tr>
+                <td><%= rows[i].pk_board %></td>
+                <td><a href="/board/detail/<%= rows[i].pk_board %>"><%= rows[i].board_title %></a></td>
+                <td>미구현</td>
+                <td><%= rows[i].board_date %></td>
+                <td><%= rows[i].board_view_count %></td>
+            </tr>
+        <%
+        }
+        %>
+    </table>
+    <button onclick="location.href='/board/insert'" class="btn btn-secondary pull-right">글쓰기</button>
+
+    <br>
+    <br>
+
+    <div class="container">
+        <ul class="pager">
+
+            <%
+            const curPage = paging.curPage;
+            const page_list_size = paging.page_list_size;
+            const page_size = paging.page_size;
+            const totalPage = paging.totalPage;
+            const totalSet = paging.totalSet;
+            const curSet = paging.curSet;
+            const startPage = paging.startPage;
+            const endPage = paging.endPage;
+
+            if(curSet > 1){
+            %>
+                <li value='<%= startPage - 1 %>' class="previous">
+                    <a href='/board/list/<%= startPage - 1 %>'></a>
+                </li>
+            <%
+            }
+
+            for (let i = startPage; i <= endPage; i++) {
+                if (i > totalPage) break;
+            if (i == curPage) {
+            %>
+                <li value="<%= i %>" class="active">
+                    <a href="/board/list/<%= i %>">
+                        <%= i %>
+                    </a>
+                </li>
+            <%
+            }else{
+            %>
+                <li value="<%= i%>" class="active">
+                    <a href="/board/list/<%= i%>">
+                        <%= i%>
+                    </a>
+                </li>
+            <%
+            }
+            }
+
+            if(curSet < totalSet){
+            %>
+            <li value="<%= endPage + 1 %>" class="next">
+                <a href="/board/list/<%= endPage + 1 %>">다음페이지</a>
+            </li>
+            <%
+            }
+            %>
+
+        </ul>
+    </div>
+</div>
+</body>
+</html>

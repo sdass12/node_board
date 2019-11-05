@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title><%= title %></title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+    <link ref="stylesheet" href="css/style.css">
+</head>
+<body>
+<header>
+    <%include header.ejs%>
+</header>
+<div class="container">
+    <h2>게시글 상세보기</h2>
+    <p></p>
+    <div class="form-group">
+        <label for="id">번호</label>
+        <input type="text" class="form-control" value="<%= result.pk_board %>" disabled>
+    </div>
+
+    <div class="form-group">
+        <label for="name">글쓴이</label>
+        <input type="text" class="form-control" id="name" name="name" value="미구현" disabled>
+    </div>
+    <div class="form-group">
+        <label for="num">글제목</label>
+        <input type="text" class="form-control" id="num" name="num" value="<%= result.board_title %>" disabled>
+    </div>
+    <div class="form-group">
+        <label for="section">수정일</label>
+        <input type="text" class="form-control" id="section" name="section" value="<%= result.board_date %>" disabled>
+    </div>
+    <div class="form-group">
+        <label for="section">글 내용</label>
+        <input type="text" class="form-control" value="<%= result.board_content %>" disabled>
+    </div>
+    <div style="text-align: center;">
+        <button type="button" onclick="history.back();" class="btn btn-success">목록으로</button>
+        <button type="button" onclick="location.href='/board/modify/<%= result.pk_board %>'" class="btn btn-success">
+            수정
+        </button>
+        <button type="button" onclick="location.href='/board/delete/<%= result.pk_board %>'" class="btn btn-success">
+            삭제
+        </button>
+    </div>
+    </form>
+</div>
+
+</body>
+</html>
