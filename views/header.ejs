@@ -1,7 +1,12 @@
 <div class="container">
     <div class="page-header">
-        <h1><a href="/list">Node.js + Express Board</a></h1>
+        <h1 class="text-center"><a href="/list">Node.js + Express Board</a></h1>
+        <%if(!session.nickname){%>
         <p class="pull-right"><a href="/login">로그인/회원가입</a></p>
+        <%}else{%>
+        <p class="pull-left"><%=session.nickname%>님 반갑습니다.</p>
+        <p class="pull-right"><a href="/logout">로그아웃</a></p>
+        <%}%>
         <br>
     </div>
 </div>

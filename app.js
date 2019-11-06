@@ -4,6 +4,7 @@ var path = require('path');
 var cookieParser = require('cookie-parser');
 var logger = require('morgan');
 const session = require('express-session');
+const crypto = require('crypto');
 
 var usersRouter = require('./routes/users');
 var boardRouter = require('./routes/board');
@@ -19,13 +20,14 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
+app.use(cookieParser());
 app.use(session({
-  key : 'sdass',
+  key : 'sid',
   secret : 'secret',
   resave : false,
   saveUninitialized : true,
   cookie : {
-    maxAge : 60000 * 60 //쿠기 유효기간 1시간
+    maxAge : 1000 * 60 * 60 //쿠기 유효기간 1시간
   }
 }));
 
