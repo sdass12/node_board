@@ -10,7 +10,7 @@
 </head>
 <body>
 <header>
-    <%include header.ejs%>
+    <% include header.ejs %>
 </header>
 <h2 class="text-center">회원가입</h2>
 <div class="container">
@@ -22,15 +22,17 @@
             </div>
             <div class="form-group">
                 <label for="inputName">닉네임</label>
-                <input type="text" class="form-control" name="nickname" placeholder="닉네임을 입력해 주세요">
-                <button class="btn pull-left" style="margin-top:5px;" id="nicknameCheck">닉네임 중복 확인</button>
+                <input type="text" class="form-control" name="nickname" placeholder="닉네임을 입력해 주세요(2~8글자)">
+                <button type="button" class="btn pull-left" style="margin-top:5px;" id="nicknameCheck">닉네임 중복 확인
+                </button>
                 <p id="canNickname"></p>
             </div>
-            <div class="form-group" style="margin-top: 42px;">
+            <div class="form-group" style="margin-top: 40px;">
                 <label for="InputEmail">이메일 주소</label>
                 <input type="email" class="form-control" name="email" placeholder="이메일 주소를 입력해주세요">
-                <button class="btn pull-left" style="margin-top:5px;" id="nicknameCheck">이메일 중복 확인</button>
-                <p id="canEmail" ></p>
+                <button class="btn pull-left" type="button" style="margin-top:5px;" id="emailCheck">이메일 중복 확인</button>
+                <br>
+                <p id="canEmail"></p>
             </div>
             <div class="form-group" style="margin-top: 42px;">
                 <label for="inputPassword">비밀번호</label>
@@ -38,7 +40,8 @@
             </div>
             <div class="form-group">
                 <label for="inputPasswordCheck">비밀번호 확인</label>
-                <input type="password" class="form-control" name="passwordCheck" placeholder="비밀번호 확인을 위해 다시한번 입력 해 주세요">
+                <input type="password" class="form-control" name="passwordCheck"
+                       placeholder="비밀번호 확인을 위해 다시한번 입력 해 주세요">
             </div>
 
             <div class="form-group text-center">
@@ -54,69 +57,104 @@
 </div>
 
 <script>
-    function chk(){
+    let isCheckNickname = false;
+    let isCheckEmail = false;
+    const emailCheck = /^[0-9a-zA-Z]([-_.]?[0-9a-zA-Z])*@[0-9a-zA-Z]([-_.]?[0-9a-zA-Z])*.[a-zA-Z]{2,3}$/i; //이메일 유효성 검사
+    function chk() {
         const form = document.form;
-        const emailCheck = /^[0-9a-zA-Z]([-_.]?[0-9a-zA-Z])*@[0-9a-zA-Z]([-_.]?[0-9a-zA-Z])*.[a-zA-Z]{2,3}$/i; //이메일 유효성 검사
 
-        if(!form.name.value){
+        if (!form.name.value) {
             alert("성명을 입력해주세요.");
             form.name.focus();
-        }else if(!form.nickname.value){
+        } else if (!form.nickname.value) {
             alert("닉네임을 입력해주세요.");
             form.nickname.focus();
-        }else if(!form.email.value){
+        } else if (!form.email.value) {
             alert("이메일을 입력해주세요.");
             form.email.focus();
-        }else if(!emailCheck.test(form.email.value)){
+        } else if (!emailCheck.test(form.email.value)) {
             alert("이메일 형식을 확인해주세요.");
             form.email.focus();
-        }else if(!form.password.value){
+        } else if (!form.password.value) {
             alert("비밀번호를 입력해주세요.");
             form.password.focus();
-        }else if(!form.passwordCheck.value){
+        } else if (!form.passwordCheck.value) {
             alert("비밀번호 확인을 입력해주세요.");
             form.passwordCheck.focus();
-        }else if(!(form.passwordCheck.value === form.password.value)){
+        } else if (!(form.passwordCheck.value === form.password.value)) {
             alert("비밀번호를 다시 확인해주세요.");
             form.password.focus();
-        }else{
+        } else if (!isCheckNickname) {
+            alert('닉네임 중복 확인을 해주세요.');
+        } else if (!isCheckEmail) {
+            alert('이메일 중복 확인을 해주세요.');
+        } else {
             form.submit();
         }
     }
 
-    $(document).ready(function(){
-        $('#nicknameCheck').click(function(){
-            const nickname = document.form.nickname.value;
-
+    //$(document).ready(function(){
+    $('#nicknameCheck').click(function () {
+        const form = document.form;
+        const nickname = form.nickname.value;
+        console.log('nickname length : ' + nickname.length);
+        if (nickname.length > 1 || nickname.length < 8) {
+            alert('닉네임 형식을 확인해주세요.');
+            form.nickname.focus();
+        } else {
             $.ajax({
+                async: true,
                 url: '/nicknameCheck',
                 dataType: 'json',
-                type: 'GET',
-                data: {data:nickname},
-                success: function(result){
-                    if(result){
-                        $('#canNickname').html(result.result);
+                type: 'POST',
+                data: {data: nickname},
+                success: function (result) {
+                    console.trace('ajaxResult');
+                    if (result) {
+                        if (result.result) {
+                            $('#canNickname').removeClass('err');
+                            $('#canNickname').addClass('success');
+                            $('#canNickname').html(nickname + "은 사용이 가능합니다.");
+                            isCheckNickname = true;
+                        } else {
+                            $('#canNickname').removeClass('success');
+                            $('#canNickname').addClass('err');
+                            $('#canNickname').html(nickname + "은 이미 사용 중입니다.");
+                        }
                     }
                 }
             });
-        })
+        }
+    })
 
-        $('#emailCheck').click(function(){
-            const email = document.form.email.value;
+    $('#emailCheck').click(function () {
+        const email = document.form.email.value;
+        if (!emailCheck.test(email)) {
+            alert('이메일 형식을 확인해주세요.');
+        } else {
 
             $.ajax({
+                async: true,
                 url: '/emailCheck',
                 dataType: 'json',
                 type: 'POST',
-                data: {data:email},
-                success: function(result){
-                    if(result){
-                        $('#canEmail').html(result.result);
+                data: {data: email},
+                success: function (result) {
+                    if (result.result) {
+                        $('#canEmail').removeClass('err');
+                        $('#canEmail').addClass('success');
+                        $('#canEmail').html(email + "은 사용이 가능합니다.");
+                        isCheckEmail = true;
+                    } else {
+                        $('#canEmail').removeClass('success');
+                        $('#canEmail').addClass('err');
+                        $('#canEmail').html(email + "은 이미 사용 중입니다.");
                     }
                 }
             });
-        })
+        }
     })
+    // })
 </script>
 </body>
 </html>

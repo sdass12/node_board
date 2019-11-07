@@ -3,9 +3,6 @@ body {
   font: 14px "Lucida Grande", Helvetica, Arial, sans-serif;
 }
 
-a {
-  color: #00B7FF;
-}
 
 *{
   padding : 0;
@@ -14,4 +11,23 @@ a {
 
 table{
   text-align: center;
+}
+
+.err{
+  color: red;
+  padding-top: 10px;
+  padding-left: 140px;
+  margin-bottom:-22px;
+}
+
+.success{
+  color : green;
+  padding-top: 10px;
+  padding-left: 140px;
+  margin-bottom:-22px;
+}
+
+#canEmail{
+  padding-top: 0;
+  margin-top: -5px;
 }

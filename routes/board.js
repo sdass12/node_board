@@ -158,34 +158,61 @@ router.get('/logout', function (req, res) {
 
 /* GET Register Page */
 router.get('/register', function (req, res) {
-    res.render('register', {session: req.session})
+    const data = req.query.data;
+    if (!(data)) {
+        res.render('register', {session: req.session})
+    } else if (data) {
+        connection.query('SELECT user_nickname from table_user WHERE user_nickname = ?', [data], function (err, result) {
+            if (result.length === 0) {
+                const output = data + '는 사용 가능한 닉네임입니다.';
+                res.render('register',{result: output})
+            } else {
+                const output = data + '는 이미 사용중입니다.';
+                res.send({result: output})
+            }
+        })
+    }
 });
 
 /* Post Register Page */
 router.post('/register', function (req, res) {
     const data = req.body;
-    //if()    <-- 이 부분에서 if를 이용해서 조건을 주고 ajax를 이용한 접근이 아닐경우만 DB에 접근하도록 바꿔줘야 됨.
     crypto.pbkdf2(data.password, 'salt is very salty', 132184, 64, 'sha512', (err, key) => {
         connection.query('INSERT INTO table_user VALUES (0,?,?,?,?,0)', [data.name, data.nickname, data.email, key.toString('base64')], function (err) {
-            if(err){
+            if (err) {
                 console.log('err : ' + err);
             }
             res.redirect('/board/list');
-
         });
     });
 });
 
-/* Get NicknameCheck Page */
-router.get('/nicknameCheck', function (req, res) {
-    const data = req.query.data;
-    connection.query('SELECT user_nickname from table_user WHERE user_nickname = ?',[data], function(err, result){
-        if(result.length === 0){
-            const output = data + '는 사용 가능한 닉네임입니다.';
-            res.send({result:output})
-        }else{
-            const output = data + '는 이미 사용중입니다.';
-            res.send({result:output})
+/* POST NicknameCheck AJAX */
+router.post('/nicknameCheck', function (req, res) {
+    const data = req.body.data;
+
+    connection.query('SELECT user_nickname from table_user WHERE user_nickname = ?', [data], function (err, result) {
+        if (result.length === 0) {
+            const output = true;
+            res.send({result: output})
+        } else {
+            const output = false;
+            res.send({result: output})
+        }
+    })
+});
+
+/* POST EmailCheck AJAX */
+router.post('/emailCheck', function (req, res) {
+    const data = req.body.data;
+
+    connection.query('SELECT user_email from table_user WHERE user_email = ?', [data], function (err, result) {
+        if (result.length === 0) {
+            const output = true;
+            res.send({result: output})
+        } else {
+            const output = false;
+            res.send({result: output})
         }
     })
 });
