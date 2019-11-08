@@ -4,7 +4,7 @@ let mariadb = require('mysql');
 let crypto = require('crypto');
 
 let connection = mariadb.createConnection({
-    host: 'localhost',
+    host: '10.0.10.12',
     port: 3308,
     user: 'root',
     password: 'root',
