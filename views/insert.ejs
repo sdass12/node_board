@@ -1,46 +1,53 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <title><%= title%></title>
+    <title><%= title %></title>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+    <% if(!session.nickname){ %>
+        <script>
+            alert('로그인이 된 유저만 글을 쓸 수 있습니다.');
+            location.href='/board/login';
+        </script>
+    <% } %>
 </head>
 <body>
 <header>
-    <%include header.ejs%>
+    <% include header.ejs %>
 </header>
 <div class="container">
     <h2>게시글 작성</h2>
     <form action="/board/insert" method="POST" name="form">
         <div class="form-group">
             <label for="name">글 제목</label>
-            <input type="text" class="form-control" name= "title">
+            <input type="text" class="form-control" name="title">
         </div>
         <div class="form-group">
             <label for="section">글 내용</label>
             <input type="text" class="form-control" name="content">
         </div>
+        <input type="hidden" name="nickname" value="<%= session.nickname %>">
         <button type="button" onclick="chk()" class="btn btn-secondary pull-right">등록</button>
     </form>
     <button onclick="history.back();" class="btn btn-secondary pull-right">취소</button>
 </div>
 
 <script>
-    function chk(){
+    function chk() {
         const form = document.form;
 
-        if(!form.title.value){
+        if (!form.title.value) {
             alert('제목을 입력해 주세요.')
             form.title.focus();
-        }else if(!form.content.value){
+        } else if (!form.content.value) {
             alert('내용을 입력해 주세요.');
             form.content.focus();
-        }else{
-        console.log('함수가 실행되고 있습니다.');
-        form.submit();
+        } else {
+            console.log('함수가 실행되고 있습니다.');
+            form.submit();
         }
     }
 </script>

@@ -31,3 +31,8 @@ table{
   padding-top: 0;
   margin-top: -5px;
 }
+
+#curPage{
+  background-color : #337ab7;
+  color:white;
+}

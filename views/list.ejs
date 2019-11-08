@@ -23,7 +23,7 @@
             <tr>
                 <td><%= rows[i].pk_board %></td>
                 <td><a href="/board/detail/<%= rows[i].pk_board %>"><%= rows[i].board_title %></a></td>
-                <td>미구현</td>
+                <td><%=rows[i].user_nickname%></td>
                 <td><%= rows[i].board_date %></td>
                 <td><%= rows[i].board_view_count %></td>
             </tr>
@@ -31,8 +31,9 @@
         }
         %>
     </table>
+    <%if(session.nickname){%>
     <button onclick="location.href='/board/insert'" class="btn btn-secondary pull-right">글쓰기</button>
-
+    <%}%>
     <br>
     <br>
 
@@ -62,7 +63,7 @@
             if (i == curPage) {
             %>
                 <li value="<%= i %>" class="active">
-                    <a href="/board/list/<%= i %>">
+                    <a id='curPage' href="/board/list/<%= i %>">
                         <%= i %>
                     </a>
                 </li>

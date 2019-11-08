@@ -98,7 +98,7 @@
         const form = document.form;
         const nickname = form.nickname.value;
         console.log('nickname length : ' + nickname.length);
-        if (nickname.length > 1 || nickname.length < 8) {
+        if (nickname.length < 2 || nickname.length > 8) {
             alert('닉네임 형식을 확인해주세요.');
             form.nickname.focus();
         } else {
@@ -120,6 +120,7 @@
                             $('#canNickname').removeClass('success');
                             $('#canNickname').addClass('err');
                             $('#canNickname').html(nickname + "은 이미 사용 중입니다.");
+                            isCheckNickname = false;
                         }
                     }
                 }
@@ -149,6 +150,7 @@
                         $('#canEmail').removeClass('success');
                         $('#canEmail').addClass('err');
                         $('#canEmail').html(email + "은 이미 사용 중입니다.");
+                        isCheckEmail = false;
                     }
                 }
             });

@@ -65,7 +65,9 @@ router.get('/list/:page', function (req, res, next) {
         };
 
         connection.query(
-            'SELECT pk_board, board_title, board_content, DATE_FORMAT(board_date, "%Y-%m-%d") AS board_date, board_view_count from table_board order by pk_board desc limit ?,?',
+            'SELECT pk_board, board_title, board_content, DATE_FORMAT(board_date, "%Y-%m-%d") AS board_date, board_view_count, user_nickname' +
+            ' from table_board tb join table_user tu on tb.fk_user_key = tu.pk_user' +
+            ' order by pk_board desc limit ?,?',
             [limit, page_size], function (err, rows) {
                 if (err) {
                     console.log('err : ' + err);
@@ -78,7 +80,9 @@ router.get('/list/:page', function (req, res, next) {
 
 /* GET Detail Page */
 router.get('/detail/:id', function (req, res) {
-    connection.query('select pk_board, board_title, board_content, DATE_FORMAT(board_date, "%Y-%m-%d") AS board_date from table_board where pk_board = ?',
+    connection.query('select pk_board, board_title, board_content, DATE_FORMAT(board_date, "%Y-%m-%d") AS board_date, user_nickname' +
+        ' from table_board tb join table_user tu on tb.fk_user_key = tu.pk_user' +
+        ' where pk_board = ?',
         [req.params.id], function (err, result) {
             res.render('detail', {title: 'Board Detail', result: result[0], session: req.session})
         })
@@ -92,7 +96,10 @@ router.get('/insert', function (req, res) {
 /* POST Insert Page */
 router.post('/insert', function (req, res) {
     const data = req.body;
-    connection.query('insert into table_board(board_title, board_content, board_date, board_view_count) VALUES(?,?,now(),0)', [data.title, data.content], function () {
+    connection.query(
+        'insert into table_board(board_title, board_content, board_date, board_view_count,fk_user_key) VALUES(?,?,now(),0,(SELECT pk_user from table_user WHERE user_nickname = ?))',
+        [data.title, data.content, data.nickname],
+        function () {
         res.redirect('/board/list');
     })
 });
