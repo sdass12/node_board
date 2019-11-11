@@ -41,8 +41,9 @@ table{
 /************* Slide **************/
 .div_sidebar{
   position: absolute !important;
-  width : 19.8%;
-  left : 40px;
+  width : 16%;
+  right : 0;
+  top : 166px;
 }
 .col-sm-2{
   width: 100%;

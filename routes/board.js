@@ -3,14 +3,24 @@ let router = express.Router();
 let mariadb = require('mysql');
 let crypto = require('crypto');
 
-let connection = mariadb.createConnection({
+let config = {
     host: 'localhost',
     port: 3308,
     user: 'root',
     password: 'root',
     database: 'board',
     multipleStatements: true
-});
+};
+const connection = mariadb.createPool(config);
+
+/*let connection = mariadb.createConnection({  헤로쿠 서버 DB
+    host: '',
+    port: 3306,
+    user: '',
+    password: '6bfff666',
+    database: 'heroku_9b115f6fb579ce2',
+    multipleStatements: true
+});*/
 /*
 const del = connection._protocol._delegateError;
 connection._protocol._delegateError = function(err, sequence){
@@ -156,6 +166,7 @@ router.post('/login', function (req, res) {
             crypto.pbkdf2(data.password, 'salt is very salty', 132184, 64, 'sha512', (err, key) => {
                 if (key.toString('base64') === result[0].user_pw) {
                     req.session.nickname = result[0].user_nickname;
+                    req.session.point = result[0].point;
                     res.redirect('/board/list')
                 } else {
                     res.render('login', {session: req.session, failLogin: true});

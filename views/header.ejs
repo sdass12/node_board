@@ -6,7 +6,8 @@
     <div class="page-header">
         <h1 class="text-center"><a href="/list">Node.js + Express Board</a></h1>
         <%if(session.nickname){%>
-        <p class="pull-right"><%=session.nickname%>님 반갑습니다.</p>
+        <p class="pull-left"><%=session.nickname%>님 반갑습니다</p>
+        <p class="pull-right">보유 포인트 : <%=session.point%></p>
         <%}%>
         <br>
     </div>
@@ -15,16 +16,19 @@
     <div class="col-sm-2">
         <nav class="nav-sidebar">
             <ul class="nav">
-                <li class="active"><a href="javascript:;">Home</a></li>
-                <li><a href="/board/list/1">게시판</a></li>
+                <li class="active"><a href="javascript:;">메뉴</a></li>
+                <li><a href="/board/list/1">메인으로</a></li>
+                <%if(session.nickname){%>
                 <li><a href="#">출석체크</a></li>
                 <li><a href="#">미니게임</a></li>
                 <li><a href="#">건의사항</a></li>
+                <li><a href="/info">회원정보</a></li>
+                <%}%>
                 <li class="nav-divider"></li>
                 <%if(!session.nickname){%>
-                    <li><a href="/login"><i class="glyphicon glyphicon-off"></i> Sign in</a></li>
+                    <li><a href="/login"><i class="glyphicon glyphicon-off"></i> Log in / Sing in</a></li>
                 <%}else{%>
-                <li><a href="/login"><i class="glyphicon glyphicon-off"></i> Sign out</a></li>
+                <li><a href="/logout"><i class="glyphicon glyphicon-off"></i> Log out</a></li>
                 <%}%>
             </ul>
         </nav>
