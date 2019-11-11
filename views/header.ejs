@@ -1,15 +1,32 @@
-<link rel="stylesheet" href="/stylesheets/style.css" type="text/css">
-
+<link href="//netdna.bootstrapcdn.com/bootstrap/3.1.0/css/bootstrap.min.css" rel="stylesheet" id="bootstrap-css">
+<script src="//netdna.bootstrapcdn.com/bootstrap/3.1.0/js/bootstrap.min.js"></script>
+<script src="//code.jquery.com/jquery-1.11.1.min.js"></script>
+<link href="/stylesheets/style.css" rel="stylesheet">
 <div class="container">
     <div class="page-header">
         <h1 class="text-center"><a href="/list">Node.js + Express Board</a></h1>
-        <%if(!session.nickname){%>
-        <p class="pull-right"><a href="/login">로그인/회원가입</a></p>
-        <%}else{%>
-        <p class="pull-left"><%=session.nickname%>님 반갑습니다.</p>
-        <p class="pull-right"><a href="/logout">로그아웃</a></p>
+        <%if(session.nickname){%>
+        <p class="pull-right"><%=session.nickname%>님 반갑습니다.</p>
         <%}%>
         <br>
     </div>
 </div>
-
+<div class="row div_sidebar">
+    <div class="col-sm-2">
+        <nav class="nav-sidebar">
+            <ul class="nav">
+                <li class="active"><a href="javascript:;">Home</a></li>
+                <li><a href="/board/list/1">게시판</a></li>
+                <li><a href="#">출석체크</a></li>
+                <li><a href="#">미니게임</a></li>
+                <li><a href="#">건의사항</a></li>
+                <li class="nav-divider"></li>
+                <%if(!session.nickname){%>
+                    <li><a href="/login"><i class="glyphicon glyphicon-off"></i> Sign in</a></li>
+                <%}else{%>
+                <li><a href="/login"><i class="glyphicon glyphicon-off"></i> Sign out</a></li>
+                <%}%>
+            </ul>
+        </nav>
+    </div>
+</div>

@@ -9,7 +9,7 @@
 </head>
 <body>
 <header>
-    <%include header.ejs%>
+    <% include header.ejs %>
 </header>
 <div class="container">
     <h2>게시글 상세보기</h2>
@@ -21,7 +21,7 @@
 
     <div class="form-group">
         <label for="name">글쓴이</label>
-        <input type="text" class="form-control" id="name" name="name" value="<%=result.user_nickname%>" disabled>
+        <input type="text" class="form-control" id="name" name="name" value="<%= result.user_nickname %>" disabled>
     </div>
     <div class="form-group">
         <label for="num">글제목</label>
@@ -37,12 +37,16 @@
     </div>
     <div style="text-align: center;">
         <button type="button" onclick="history.back();" class="btn btn-success">목록으로</button>
-        <button type="button" onclick="location.href='/board/modify/<%= result.pk_board %>'" class="btn btn-success">
-            수정
-        </button>
-        <button type="button" onclick="location.href='/board/delete/<%= result.pk_board %>'" class="btn btn-success">
-            삭제
-        </button>
+        <% if( result.user_nickname
+                === session.nickname){
+        %>
+            <button type="button" onclick="location.href='/board/modify/<%= result.pk_board %>'" class="btn btn-success">
+                수정
+            </button>
+            <button type="button" onclick="location.href='/board/delete/<%= result.pk_board %>'" class="btn btn-success">
+                삭제
+            </button>
+        <% } %>
     </div>
     </form>
 </div>

@@ -4,14 +4,14 @@ let mariadb = require('mysql');
 let crypto = require('crypto');
 
 let connection = mariadb.createConnection({
-    host: '10.0.10.12',
+    host: 'localhost',
     port: 3308,
     user: 'root',
     password: 'root',
     database: 'board',
     multipleStatements: true
 });
-
+/*
 const del = connection._protocol._delegateError;
 connection._protocol._delegateError = function(err, sequence){
     if (err.fatal) {
@@ -19,7 +19,8 @@ connection._protocol._delegateError = function(err, sequence){
     }
     return del.call(this, err, sequence);
 };
-
+*/
+connection.on('error', function () {});
 
 /* GET List Page */
 router.get('/', function (req, res) {
@@ -82,7 +83,7 @@ router.get('/list/:page', function (req, res, next) {
                     return;
                 }
                 res.render('list', {title: 'Board List', rows: rows, paging: paging, session: session});
-            })
+            });
     });
 });
 
