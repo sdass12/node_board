@@ -2,6 +2,7 @@ let express = require('express');
 let router = express.Router();
 let mariadb = require('mysql');
 let crypto = require('crypto');
+let nodemailer = require('nodemailer');
 
 let config = {
     host: 'localhost',
@@ -30,7 +31,8 @@ connection._protocol._delegateError = function(err, sequence){
     return del.call(this, err, sequence);
 };
 */
-connection.on('error', function () {});
+connection.on('error', function () {
+});
 
 /* GET List Page */
 router.get('/', function (req, res) {
@@ -119,8 +121,8 @@ router.post('/insert', function (req, res) {
         'insert into table_board(board_title, board_content, board_date, board_view_count,fk_user_key) VALUES(?,?,now(),0,(SELECT pk_user from table_user WHERE user_nickname = ?))',
         [data.title, data.content, data.nickname],
         function () {
-        res.redirect('/board/list');
-    })
+            res.redirect('/board/list');
+        })
 });
 
 /* GET Modify Page */
@@ -175,12 +177,12 @@ router.post('/login', function (req, res) {
         }
     });
 });
-
 /* GET Logout Page */
 router.get('/logout', function (req, res) {
     req.session.destroy(); //세션 정보를 삭제(session.delete를 사용하길 권장)
     res.clearCookie('sid'); //app.js에서 정했던 key값을 이용해서 쿠키를 삭제
-    res.redirect('back'); //로그아웃이 완료 되면 새로고침
+    //res.redirect('back'); //로그아웃이 완료 되면 새로고침
+    res.redirect('/board/list/1'); //
 });
 
 /* GET Register Page */
@@ -192,7 +194,7 @@ router.get('/register', function (req, res) {
         connection.query('SELECT user_nickname from table_user WHERE user_nickname = ?', [data], function (err, result) {
             if (result.length === 0) {
                 const output = data + '는 사용 가능한 닉네임입니다.';
-                res.render('register',{result: output})
+                res.render('register', {result: output})
             } else {
                 const output = data + '는 이미 사용중입니다.';
                 res.send({result: output})
@@ -204,14 +206,61 @@ router.get('/register', function (req, res) {
 /* Post Register Page */
 router.post('/register', function (req, res) {
     const data = req.body;
+
+    const key_one = crypto.randomBytes(256).toString('hex').substr(158, 12);
+    const key_two = crypto.randomBytes(256).toString('base64').substr(168, 12);
+    const key_for_verify = key_one + key_two;
+
     crypto.pbkdf2(data.password, 'salt is very salty', 132184, 64, 'sha512', (err, key) => {
-        connection.query('INSERT INTO table_user VALUES (0,?,?,?,?,0)', [data.name, data.nickname, data.email, key.toString('base64')], function (err) {
-            if (err) {
-                console.log('err : ' + err);
-            }
-            res.redirect('/board/list');
-        });
+        connection.query('INSERT INTO table_user VALUES (0,?,?,?,?,0,0,?)', [data.name, data.nickname, data.email, key.toString('base64'), key_for_verify],
+            function (err) {
+                if (err) {
+                    console.log('err : ' + err);
+                }
+            });
     });
+            const transporter = nodemailer.createTransport({
+                service: 'gmail',
+                auth: {
+                    user: 'hc09471@gmail.com',
+                    pass: 'password hahaha'
+                }
+            });
+
+            const mailOption = {
+                from: 'hc09471@gmail.com',
+                to: data.email,
+                subject: '대충 이메일 인증하라는 제목',
+                html: '<h3>안녕하십니까 HHK입니다. 당신의 신상은 털렸으니 순순히 밑에 링크를 눌르세요. </h3><br/>' +
+                    'http://' + req.get('host') + '/confirmEmail' + '?key=' + key_for_verify
+            };
+
+            transporter.sendMail(mailOption, function (err, info) {
+                if (err) {
+                    console.log('mail err : ' + err);
+                } else {
+                    console.log('Email sent : ' + info.response);
+                }
+        });
+        /* 회원가입 이후 afetRegister페이지에서는 로그인이 돼 있는 것 처럼 보이지만 그 상태에서 메인으로를 눌러서 메인페이지로 이동되면 세션이 풀리면서 로그아웃이 되는 현상이 있음 2019-11-12 */
+        req.session.nickname = data.nickname;
+        req.session.email = data.email;
+        req.session.point = '0';
+        res.redirect('/afterRegister');
+
+});
+
+/* Get AfterRegister Page */
+router.get('/afterRegister', function (req, res) {
+    const session = req.session;
+
+
+    res.render('afterRegister', {session: session});
+});
+
+/* Get ConfirmEamil Page */
+router.get('/confirmEmail', function (req, res) {
+
 });
 
 /* POST NicknameCheck AJAX */

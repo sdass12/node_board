@@ -5,6 +5,8 @@ var cookieParser = require('cookie-parser');
 var logger = require('morgan');
 const session = require('express-session');
 const crypto = require('crypto');
+const nodemailer = require('nodemailer');
+
 
 var usersRouter = require('./routes/users');
 var boardRouter = require('./routes/board');
