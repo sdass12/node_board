@@ -9,7 +9,12 @@
             alert('로그인이 된 유저만 글을 쓸 수 있습니다.');
             location.href='/board/login';
         </script>
-    <% } %>
+    <% }else if(!session.access == 1){ %>
+        <script>
+            alert('이메일 인증을 해주세요.');
+            history.back();
+        </script>
+    <%}%>
 </head>
 <body>
 <header>

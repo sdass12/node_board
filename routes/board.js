@@ -169,6 +169,7 @@ router.post('/login', function (req, res) {
                 if (key.toString('base64') === result[0].user_pw) {
                     req.session.nickname = result[0].user_nickname;
                     req.session.point = result[0].point;
+                    req.session.access = result[0].email_verified;
                     res.redirect('/board/list')
                 } else {
                     res.render('login', {session: req.session, failLogin: true});
@@ -219,35 +220,49 @@ router.post('/register', function (req, res) {
                 }
             });
     });
-            const transporter = nodemailer.createTransport({
-                service: 'gmail',
-                auth: {
-                    user: 'hc09471@gmail.com',
-                    pass: 'password hahaha'
-                }
-            });
+    const transporter = nodemailer.createTransport({
+        service: 'gmail',
+        auth: {
+            user: 'adrnin.hhk@gmail.com',
+            pass: 'password hahaha'
+        }
+    });
+    const link = 'http://' + req.get('host') + '/confirmEmail/' + key_for_verify;
+    const mailOption = {
+        from: 'adrnmin.hhk@gmail.com',
+        to: data.email,
+        subject: '대충 이메일 인증하라는 제목',
+        html: '<h3>안녕하십니까 HHK입니다. 당신의 신상은 털렸으니 순순히 밑에 링크를 Push 하세요. </h3><br/>' +
+            '<a href="'+link+'"> Push me </a>'
+    };
 
-            const mailOption = {
-                from: 'hc09471@gmail.com',
-                to: data.email,
-                subject: '대충 이메일 인증하라는 제목',
-                html: '<h3>안녕하십니까 HHK입니다. 당신의 신상은 털렸으니 순순히 밑에 링크를 눌르세요. </h3><br/>' +
-                    'http://' + req.get('host') + '/confirmEmail' + '?key=' + key_for_verify
-            };
+    transporter.sendMail(mailOption, function (err, info) {
+        if (err) {
+            console.log('mail err : ' + err);
+        } else {
+            console.log('Email sent : ' + info.response);
+        }
+    });
+    /* TODO: 회원가입 이후 afterRegister페이지에서는 로그인이 돼 있는 것 처럼 보이지만 그 상태에서 메인으로를 눌러서 메인페이지로 이동되면 세션이 풀리면서 로그아웃이 되는 현상이 있음 2019-11-12 */
+    req.session.nickname = data.nickname;
+    req.session.email = data.email;
+    req.session.point = '0';
+    res.redirect('/afterRegister');
 
-            transporter.sendMail(mailOption, function (err, info) {
-                if (err) {
-                    console.log('mail err : ' + err);
-                } else {
-                    console.log('Email sent : ' + info.response);
-                }
-        });
-        /* 회원가입 이후 afetRegister페이지에서는 로그인이 돼 있는 것 처럼 보이지만 그 상태에서 메인으로를 눌러서 메인페이지로 이동되면 세션이 풀리면서 로그아웃이 되는 현상이 있음 2019-11-12 */
-        req.session.nickname = data.nickname;
-        req.session.email = data.email;
-        req.session.point = '0';
-        res.redirect('/afterRegister');
+});
 
+/* Get ConfirmEmail Page */
+router.get('/confirmEmail/:key', function (req, res) {
+    const key = req.params.key;
+
+    connection.query('UPDATE table_user SET email_verified = 1 WHERE email_key = ?',[key], function (err) {
+        if(err){
+            console.log('err : ' + err);
+        }else{
+            req.session.access = 1;
+            res.render('emailConfirmSuccess',{session : req.session});
+        }
+    })
 });
 
 /* Get AfterRegister Page */
@@ -256,11 +271,6 @@ router.get('/afterRegister', function (req, res) {
 
 
     res.render('afterRegister', {session: session});
-});
-
-/* Get ConfirmEamil Page */
-router.get('/confirmEmail', function (req, res) {
-
 });
 
 /* POST NicknameCheck AJAX */
@@ -290,6 +300,19 @@ router.post('/emailCheck', function (req, res) {
             const output = false;
             res.send({result: output})
         }
+    })
+});
+
+/* GET Info Page */
+router.get('/info',function (req,res) {
+    const session = req.session;
+    
+    connection.query('SELECT * FROM table_user WHERE user_nickname = ?',[session.nickname], function (err, result) {
+        if(err){
+            console.log('err : ' + err);
+        }
+    res.render('info',{result : result[0], session : session})
+
     })
 });
 

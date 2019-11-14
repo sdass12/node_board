@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>회원정보</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+</head>
+<body>
+<header>
+    <% include header.ejs %>
+</header>
+<div class="container">
+    <h2>회원정보</h2>
+    <p></p>
+    <div class="form-group">
+        <label for="section">이름</label>
+        <input type="text" class="form-control" value="<%= result.user_name %>" disabled>
+    </div>
+    <div class="form-group">
+        <label for="id">닉네임</label>
+        <input type="text" class="form-control" value="<%= result.user_nickname %>" disabled>
+    </div>
+
+    <div class="form-group">
+        <label for="name">이메일</label>
+        <input type="text" class="form-control" id="name" name="name" value="<%= result.user_email %>" disabled>
+    </div>
+    <div class="form-group">
+        <label for="num">이메일 인증 여부</label>
+        <%
+            let user_verified = session.access;
+            if(user_verified === 1){
+                user_verified = '인증 완료'
+            }else{
+                user_verified = '인증 미완료'
+            }
+        %>
+        <input type="text" class="form-control" id="num" name="num" value="<%= user_verified %>" disabled>
+        <%if(user_verified == '인증 미완료'){%>
+            <button type="button" class="btn top_margin">확인메일 재발송</button>
+        <%}%>
+    </div>
+    <div style="text-align: center;">
+        <button type="button" onclick="location.href='/secession'" class="btn btn-success">회원탈퇴</button>
+    </div>
+</div>
+</body>
+</html>
