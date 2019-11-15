@@ -12,16 +12,17 @@ let config = {
     database: 'board',
     multipleStatements: true
 };
-const connection = mariadb.createPool(config);
-
-/*let connection = mariadb.createConnection({  헤로쿠 서버 DB
+/* 헤로쿠 cleardb config
+let config = {
     host: '',
     port: 3306,
     user: '',
     password: '6bfff666',
     database: 'heroku_9b115f6fb579ce2',
     multipleStatements: true
-});*/
+};*/
+const connection = mariadb.createPool(config);
+
 /*
 const del = connection._protocol._delegateError;
 connection._protocol._delegateError = function(err, sequence){
@@ -103,9 +104,10 @@ router.get('/list/:page', function (req, res, next) {
 router.get('/detail/:id', function (req, res) {
     connection.query('select pk_board, board_title, board_content, DATE_FORMAT(board_date, "%Y-%m-%d") AS board_date, user_nickname' +
         ' from table_board tb join table_user tu on tb.fk_user_key = tu.pk_user' +
-        ' where pk_board = ?',
-        [req.params.id], function (err, result) {
-            res.render('detail', {title: 'Board Detail', result: result[0], session: req.session})
+        ' where pk_board = ?; ' +
+        'UPDATE table_board SET board_view_count = board_view_count+1 WHERE pk_board=?',
+        [req.params.id, req.params.id], function (err, result) {
+            res.render('detail', {title: 'Board Detail', result: result[0][0], session: req.session})
         })
 });
 
