@@ -36,21 +36,21 @@ connection.on('error', function () {
 });
 
 /* GET List Page */
-router.get('/', function (req, res) {
+router.get('/', (req,res) => {
     res.redirect('/board/list/1');
 });
 
-router.get('/list', function (req, res, next) {
+router.get('/list', (req,res,next) => {
     res.redirect('/board/list/1');
 });
 
-router.get('/list/:page', function (req, res, next) {
+router.get('/list/:page', (req, res, next) => {
     const page_size = 10; //한 페이지당 게시물 10개
     const page_list_size = 10; //페이지 리스트 10개
     let limit = null; //limit 변수
     let totalPageCount = 0; //전체 게시물 개수
     const session = req.session;
-    connection.query('SELECT count(*) AS cnt from table_board', function (err, result) {
+    connection.query('SELECT count(*) AS cnt from table_board',  (err, result) => {
         if (err) {
             console.log('err : ' + err);
             return;
@@ -101,7 +101,7 @@ router.get('/list/:page', function (req, res, next) {
 });
 
 /* GET Detail Page */
-router.get('/detail/:id', function (req, res) {
+router.get('/detail/:id', (req, res) => {
     connection.query('select pk_board, board_title, board_content, DATE_FORMAT(board_date, "%Y-%m-%d") AS board_date, user_nickname' +
         ' from table_board tb join table_user tu on tb.fk_user_key = tu.pk_user' +
         ' where pk_board = ?; ' +
@@ -112,12 +112,12 @@ router.get('/detail/:id', function (req, res) {
 });
 
 /* GET Insert Page */
-router.get('/insert', function (req, res) {
+router.get('/insert', (req, res) => {
     res.render('insert', {title: 'Insert Page', session: req.session})
 });
 
 /* POST Insert Page */
-router.post('/insert', function (req, res) {
+router.post('/insert', (req, res) => {
     const data = req.body;
     connection.query(
         'insert into table_board(board_title, board_content, board_date, board_view_count,fk_user_key) VALUES(?,?,now(),0,(SELECT pk_user from table_user WHERE user_nickname = ?))',
@@ -128,7 +128,7 @@ router.post('/insert', function (req, res) {
 });
 
 /* GET Modify Page */
-router.get('/modify/:id', function (req, res) {
+router.get('/modify/:id', (req, res) => {
     connection.query('select pk_board, board_title, board_content from table_board where pk_board = ?',
         [req.params.id], function (err, result) {
             res.render('modify', {title: 'Modify Page', result: result[0], session: req.session})
@@ -136,7 +136,7 @@ router.get('/modify/:id', function (req, res) {
 });
 
 /* POST Modify Page */
-router.post('/modify', function (req, res) {
+router.post('/modify', (req, res) => {
     const data = req.body;
 
     connection.query('UPDATE table_board SET board_title = ?, board_content = ?, board_date = now() WHERE pk_board=?',
@@ -145,7 +145,7 @@ router.post('/modify', function (req, res) {
 });
 
 /* GET Delete Page */
-router.get('/delete/:id', function (req, res) {
+router.get('/delete/:id', (req, res) => {
     connection.query('DELETE from table_board WHERE pk_board = ?', [req.params.id], function (err) {
         if (err) {
             console.log('err : ' + err);
@@ -155,13 +155,13 @@ router.get('/delete/:id', function (req, res) {
     })
 });
 /* GET Login Page */
-router.get('/login', function (req, res) {
+router.get('/login', (req, res) => {
     const session = req.session;
     res.render('login', {session: session, failLogin: false});
 });
 
 /* POST Login Page */
-router.post('/login', function (req, res) {
+router.post('/login', (req, res) => {
     const data = req.body;
     connection.query('SELECT * from table_user WHERE user_email = ?', [data.email], function (err, result) {
         if (result[0] === undefined) {
@@ -181,7 +181,7 @@ router.post('/login', function (req, res) {
     });
 });
 /* GET Logout Page */
-router.get('/logout', function (req, res) {
+router.get('/logout', (req, res) => {
     req.session.destroy(); //세션 정보를 삭제(session.delete를 사용하길 권장)
     res.clearCookie('sid'); //app.js에서 정했던 key값을 이용해서 쿠키를 삭제
     //res.redirect('back'); //로그아웃이 완료 되면 새로고침
@@ -189,7 +189,7 @@ router.get('/logout', function (req, res) {
 });
 
 /* GET Register Page */
-router.get('/register', function (req, res) {
+router.get('/register', (req, res) => {
     const data = req.query.data;
     if (!(data)) {
         res.render('register', {session: req.session})
@@ -207,7 +207,7 @@ router.get('/register', function (req, res) {
 });
 
 /* Post Register Page */
-router.post('/register', function (req, res) {
+router.post('/register', (req, res) => {
     const data = req.body;
 
     const key_one = crypto.randomBytes(256).toString('hex').substr(158, 12);
@@ -238,7 +238,7 @@ router.post('/register', function (req, res) {
             '<a href="'+link+'"> Push me </a>'
     };
 
-    transporter.sendMail(mailOption, function (err, info) {
+    transporter.sendMail(mailOption,(err, info) => {
         if (err) {
             console.log('mail err : ' + err);
         } else {
@@ -254,7 +254,7 @@ router.post('/register', function (req, res) {
 });
 
 /* Get ConfirmEmail Page */
-router.get('/confirmEmail/:key', function (req, res) {
+router.get('/confirmEmail/:key', (req, res) => {
     const key = req.params.key;
 
     connection.query('UPDATE table_user SET email_verified = 1 WHERE email_key = ?',[key], function (err) {
