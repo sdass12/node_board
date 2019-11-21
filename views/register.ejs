@@ -113,12 +113,12 @@
                         if (result.result) {
                             $('#canNickname').removeClass('err');
                             $('#canNickname').addClass('success');
-                            $('#canNickname').html(nickname + "은 사용이 가능합니다.");
+                            $('#canNickname').html(nickname + "은(는) 사용이 가능합니다.");
                             isCheckNickname = true;
                         } else {
                             $('#canNickname').removeClass('success');
                             $('#canNickname').addClass('err');
-                            $('#canNickname').html(nickname + "은 이미 사용 중입니다.");
+                            $('#canNickname').html(nickname + "은(는) 이미 사용 중입니다.");
                             isCheckNickname = false;
                         }
                     }
@@ -143,12 +143,12 @@
                     if (result.result) {
                         $('#canEmail').removeClass('err');
                         $('#canEmail').addClass('success');
-                        $('#canEmail').html(email + "은 사용이 가능합니다.");
+                        $('#canEmail').html(email + "은(는) 사용이 가능합니다.");
                         isCheckEmail = true;
                     } else {
                         $('#canEmail').removeClass('success');
                         $('#canEmail').addClass('err');
-                        $('#canEmail').html(email + "은 이미 사용 중입니다.");
+                        $('#canEmail').html(email + "은(는) 이미 사용 중입니다.");
                         isCheckEmail = false;
                     }
                 }

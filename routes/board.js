@@ -1,8 +1,9 @@
-let express = require('express');
-let router = express.Router();
-let mariadb = require('mysql');
-let crypto = require('crypto');
-let nodemailer = require('nodemailer');
+const express = require('express');
+const router = express.Router();
+const mariadb = require('mysql');
+const crypto = require('crypto');
+const nodemailer = require('nodemailer');
+const moment = require('moment');
 
 let config = {
     host: 'localhost',
@@ -222,29 +223,8 @@ router.post('/register', (req, res) => {
                 }
             });
     });
-    const transporter = nodemailer.createTransport({
-        service: 'gmail',
-        auth: {
-            user: 'adrnin.hhk@gmail.com',
-            pass: 'password hahaha'
-        }
-    });
-    const link = 'http://' + req.get('host') + '/confirmEmail/' + key_for_verify;
-    const mailOption = {
-        from: 'adrnmin.hhk@gmail.com',
-        to: data.email,
-        subject: '대충 이메일 인증하라는 제목',
-        html: '<h3>안녕하십니까 HHK입니다. 당신의 신상은 털렸으니 순순히 밑에 링크를 Push 하세요. </h3><br/>' +
-            '<a href="'+link+'"> Push me </a>'
-    };
-
-    transporter.sendMail(mailOption,(err, info) => {
-        if (err) {
-            console.log('mail err : ' + err);
-        } else {
-            console.log('Email sent : ' + info.response);
-        }
-    });
+    // TODO: 이메일 보내는 기능을 함수화 해서 사용
+    sendMail(data.email, key_for_verify, req);
     /* TODO: 회원가입 이후 afterRegister페이지에서는 로그인이 돼 있는 것 처럼 보이지만 그 상태에서 메인으로를 눌러서 메인페이지로 이동되면 세션이 풀리면서 로그아웃이 되는 현상이 있음 2019-11-12 */
     req.session.nickname = data.nickname;
     req.session.email = data.email;
@@ -269,10 +249,8 @@ router.get('/confirmEmail/:key', (req, res) => {
 
 /* Get AfterRegister Page */
 router.get('/afterRegister', function (req, res) {
-    const session = req.session;
 
-
-    res.render('afterRegister', {session: session});
+    res.render('afterRegister', {session: req.session});
 });
 
 /* POST NicknameCheck AJAX */
@@ -306,7 +284,7 @@ router.post('/emailCheck', function (req, res) {
 });
 
 /* GET Info Page */
-router.get('/info',function (req,res) {
+router.get('/info', (req,res) => {
     const session = req.session;
     
     connection.query('SELECT * FROM table_user WHERE user_nickname = ?',[session.nickname], function (err, result) {
@@ -318,4 +296,59 @@ router.get('/info',function (req,res) {
     })
 });
 
+/* GET resendMail Page */
+router.get('/resendMail', (req,res) =>{
+    const nickname = req.session.nickname;
+    console.log(nickname);
+    //TODO : 현재 밑 쿼리에 대한 결과 값이 없음. 쿼리 수정 후 이메일 재전송 및 마지막 재전송 날짜와 비교하여 하루 이상 차이가 나지 않을 경우 이메일 재전송을 안 보내도록 수정.
+    connection.query('SELECT substr(last_resend,1,4) AS YEAR, substr(last_resend,6,2) AS MONTH, substr(last_resend,9) AS DAY FROM table_user WHERE user_nickname=?',
+        [nickname], (result, err)=> {
+        if(err){
+            console.log('err : ' + err);
+        }
+            console.log(result);
+            /*const year = result[0].YEAR;
+            const month = result[0].MONTH;
+            const day = result[0].DAY;
+
+            const lastDate = moment([year, month, day]);
+            const nowDate = moment().format('YYYY-MM-DD');
+            console.log(lastDate);
+            console.log(nowDate);*/
+
+
+    })
+});
+
+router.get('/sucesession', (req,res)=>{
+
+    //TODO : 회원탈퇴를 눌렀을 때 회원탈퇴 의사를 한 번 더 확인한 후 회원탈퇴 조치. 회원 탈퇴를 컬럼 삭제를 할지 로우만 암호화 할지는 고민해봐야 됨.
+});
+
+function sendMail(receiver, emailKey, req){
+    const transporter = nodemailer.createTransport({
+        service: 'gmail',
+        auth: {
+            user: 'adrnin.hhk@gmail.com',
+            pass: 'password lol'
+        }
+    });
+    const link = 'http://' + req.get('host') + '/confirmEmail/' + emailKey; //유저에게 보낼 링크
+
+    const mailOption = {
+        from: 'adrnmin.hhk@gmail.com',
+        to: receiver,
+        subject: '대충 이메일 인증하라는 제목',
+        html: '<h3>이메일 인증을 하실려면 밑에 링크를 누르세요. </h3><br/>' +
+            '<a href="'+link+'"> Push me </a>'
+    };
+
+    transporter.sendMail(mailOption,(err, info) => {
+        if (err) {
+            console.log('mail err : ' + err);
+        } else {
+            console.log('Email sent : ' + info.response);
+        }
+    });
+}
 module.exports = router;
