@@ -37,11 +37,11 @@ connection.on('error', function () {
 });
 
 /* GET List Page */
-router.get('/', (req,res) => {
+router.get('/', (req, res) => {
     res.redirect('/board/list/1');
 });
 
-router.get('/list', (req,res,next) => {
+router.get('/list', (req, res, next) => {
     res.redirect('/board/list/1');
 });
 
@@ -51,7 +51,7 @@ router.get('/list/:page', (req, res, next) => {
     let limit = null; //limit 변수
     let totalPageCount = 0; //전체 게시물 개수
     const session = req.session;
-    connection.query('SELECT count(*) AS cnt from table_board',  (err, result) => {
+    connection.query('SELECT count(*) AS cnt from table_board', (err, result) => {
         if (err) {
             console.log('err : ' + err);
             return;
@@ -237,12 +237,12 @@ router.post('/register', (req, res) => {
 router.get('/confirmEmail/:key', (req, res) => {
     const key = req.params.key;
 
-    connection.query('UPDATE table_user SET email_verified = 1 WHERE email_key = ?',[key], function (err) {
-        if(err){
+    connection.query('UPDATE table_user SET email_verified = 1 WHERE email_key = ?', [key], function (err) {
+        if (err) {
             console.log('err : ' + err);
-        }else{
+        } else {
             req.session.access = 1;
-            res.render('emailConfirmSuccess',{session : req.session});
+            res.render('emailConfirmSuccess', {session: req.session});
         }
     })
 });
@@ -284,48 +284,57 @@ router.post('/emailCheck', function (req, res) {
 });
 
 /* GET Info Page */
-router.get('/info', (req,res) => {
+router.get('/info', (req, res) => {
     const session = req.session;
-    
-    connection.query('SELECT * FROM table_user WHERE user_nickname = ?',[session.nickname], function (err, result) {
-        if(err){
+
+    connection.query('SELECT * FROM table_user WHERE user_nickname = ?', [session.nickname], function (err, result) {
+        if (err) {
             console.log('err : ' + err);
         }
-    res.render('info',{result : result[0], session : session})
+        res.render('info', {result: result[0], session: session})
 
     })
 });
 
 /* GET resendMail Page */
-router.get('/resendMail', (req,res) =>{
+router.get('/resendMail', (req, res) => {
     const nickname = req.session.nickname;
-    console.log(nickname);
-    //TODO : 현재 밑 쿼리에 대한 결과 값이 없음. 쿼리 수정 후 이메일 재전송 및 마지막 재전송 날짜와 비교하여 하루 이상 차이가 나지 않을 경우 이메일 재전송을 안 보내도록 수정.
+
     connection.query('SELECT substr(last_resend,1,4) AS YEAR, substr(last_resend,6,2) AS MONTH, substr(last_resend,9) AS DAY FROM table_user WHERE user_nickname=?',
-        [nickname], (result, err)=> {
-        if(err){
-            console.log('err : ' + err);
-        }
-            console.log(result);
-            /*const year = result[0].YEAR;
+        [nickname], (err, result) => {
+            if (err) {
+                console.log('err : ' + err);
+            }
+
+            const year = result[0].YEAR;
             const month = result[0].MONTH;
             const day = result[0].DAY;
 
-            const lastDate = moment([year, month, day]);
-            const nowDate = moment().format('YYYY-MM-DD');
+            console.log(year + month + day);
+            const lastDate = moment([year, month - 1, day]);
+            const nowDate = moment();
+
             console.log(lastDate);
-            console.log(nowDate);*/
+            console.log(nowDate);
+            const diffDay = nowDate.diff(lastDate, 'days');
+            console.log(diffDay);
 
+            //TODO : 하루 이상 차이가 나면 이메일 재인증을 해주고 lastday를 오늘로 바꿔주는 쿼리를 날림. 차이가 안 나면 경고창을 띄우고 리턴.
+            if (diffDay >= 1) {
+                console.log('하루이상 차이남.')
+            } else {
+                console.log('오늘 시도했음.')
+            }
 
-    })
+        })
 });
 
-router.get('/sucesession', (req,res)=>{
+router.get('/sucesession', (req, res) => {
 
     //TODO : 회원탈퇴를 눌렀을 때 회원탈퇴 의사를 한 번 더 확인한 후 회원탈퇴 조치. 회원 탈퇴를 컬럼 삭제를 할지 로우만 암호화 할지는 고민해봐야 됨.
 });
 
-function sendMail(receiver, emailKey, req){
+function sendMail(receiver, emailKey, req) {
     const transporter = nodemailer.createTransport({
         service: 'gmail',
         auth: {
@@ -340,10 +349,10 @@ function sendMail(receiver, emailKey, req){
         to: receiver,
         subject: '대충 이메일 인증하라는 제목',
         html: '<h3>이메일 인증을 하실려면 밑에 링크를 누르세요. </h3><br/>' +
-            '<a href="'+link+'"> Push me </a>'
+            '<a href="' + link + '"> Push me </a>'
     };
 
-    transporter.sendMail(mailOption,(err, info) => {
+    transporter.sendMail(mailOption, (err, info) => {
         if (err) {
             console.log('mail err : ' + err);
         } else {
@@ -351,4 +360,5 @@ function sendMail(receiver, emailKey, req){
         }
     });
 }
+
 module.exports = router;
