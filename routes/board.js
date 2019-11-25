@@ -322,6 +322,7 @@ router.get('/resendMail', (req, res) => {
             //TODO : 하루 이상 차이가 나면 이메일 재인증을 해주고 lastday를 오늘로 바꿔주는 쿼리를 날림. 차이가 안 나면 경고창을 띄우고 리턴.
             if (diffDay >= 1) {
                 console.log('하루이상 차이남.')
+
             } else {
                 console.log('오늘 시도했음.')
             }
