@@ -38,6 +38,7 @@ connection.on('error', function () {
 
 /* GET List Page */
 router.get('/', (req, res) => {
+
     res.redirect('/board/list/1');
 });
 
