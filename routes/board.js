@@ -2,8 +2,8 @@ const express = require('express');
 const router = express.Router();
 const mariadb = require('mysql');
 const crypto = require('crypto');
-const nodemailer = require('nodemailer');
 const moment = require('moment');
+const utils = require('../public/javascripts/utils');
 
 let config = {
     host: 'localhost',
@@ -215,18 +215,19 @@ router.post('/register', (req, res) => {
     const key_one = crypto.randomBytes(256).toString('hex').substr(158, 12);
     const key_two = crypto.randomBytes(256).toString('base64').substr(168, 12);
     const key_for_verify = key_one + key_two;
+    //TODO : emailKey에 /가 있을 경우 페이지 요청을 받을 때 /를 경로로 인식해서 404페이지가 나오는 문제가 있음. emailKey를 발급하고 DB에 넣기 전에 한번 검사해야됨. 2019-12-19
 
     crypto.pbkdf2(data.password, 'salt is very salty', 132184, 64, 'sha512', (err, key) => {
-        connection.query('INSERT INTO table_user VALUES (0,?,?,?,?,0,0,?)', [data.name, data.nickname, data.email, key.toString('base64'), key_for_verify],
+        connection.query('INSERT INTO table_user VALUES (0,?,?,?,?,0,0,?,now())', [data.name, data.nickname, data.email, key.toString('base64'), key_for_verify],
             function (err) {
                 if (err) {
                     console.log('err : ' + err);
                 }
             });
     });
-    // TODO: 이메일 보내는 기능을 함수화 해서 사용
-    sendMail(data.email, key_for_verify, req);
-    /* TODO: 회원가입 이후 afterRegister페이지에서는 로그인이 돼 있는 것 처럼 보이지만 그 상태에서 메인으로를 눌러서 메인페이지로 이동되면 세션이 풀리면서 로그아웃이 되는 현상이 있음 2019-11-12 */
+    // TODO : 회원가입 완료를 한 후 이메일이 발송되게 해야함. 회원가입에서 에러가 나도 이메일로 인증 메일을 보내버림. 2019-12-19
+    utils.sendMail(data.email, key_for_verify, req);
+
     req.session.nickname = data.nickname;
     req.session.email = data.email;
     req.session.point = '0';
@@ -237,7 +238,7 @@ router.post('/register', (req, res) => {
 /* Get ConfirmEmail Page */
 router.get('/confirmEmail/:key', (req, res) => {
     const key = req.params.key;
-
+    //TODO : 인증이 완료됐건 안 됐건 이메일 인증이 완료됐다는 페이지가 노출됨. 페이지를 렌더링할 때 boolean 값을 하나 같이 보내서 이메일 인증 여부를 보여줘야 됨. 2019-12-19
     connection.query('UPDATE table_user SET email_verified = 1 WHERE email_key = ?', [key], function (err) {
         if (err) {
             console.log('err : ' + err);
@@ -333,34 +334,7 @@ router.get('/resendMail', (req, res) => {
 
 router.get('/sucesession', (req, res) => {
 
-    //TODO : 회원탈퇴를 눌렀을 때 회원탈퇴 의사를 한 번 더 확인한 후 회원탈퇴 조치. 회원 탈퇴를 컬럼 삭제를 할지 로우만 암호화 할지는 고민해봐야 됨.
+    //TODO : 회원탈퇴를 눌렀을 때 회원탈퇴 의사를 한 번 더 확인한 후 회원탈퇴 조치. 회원 탈퇴를 컬럼 삭제를 할지 데이터만 암호화 할지는 고민해봐야 됨.
 });
-
-function sendMail(receiver, emailKey, req) {
-    const transporter = nodemailer.createTransport({
-        service: 'gmail',
-        auth: {
-            user: 'adrnin.hhk@gmail.com',
-            pass: 'password lol'
-        }
-    });
-    const link = 'http://' + req.get('host') + '/confirmEmail/' + emailKey; //유저에게 보낼 링크
-
-    const mailOption = {
-        from: 'adrnmin.hhk@gmail.com',
-        to: receiver,
-        subject: '대충 이메일 인증하라는 제목',
-        html: '<h3>이메일 인증을 하실려면 밑에 링크를 누르세요. </h3><br/>' +
-            '<a href="' + link + '"> Push me </a>'
-    };
-
-    transporter.sendMail(mailOption, (err, info) => {
-        if (err) {
-            console.log('mail err : ' + err);
-        } else {
-            console.log('Email sent : ' + info.response);
-        }
-    });
-}
 
 module.exports = router;

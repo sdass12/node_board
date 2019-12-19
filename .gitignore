@@ -1,0 +1,5 @@
+# 이메일 발송  설정
+/config/config_sendMail.js
+
+# node_modules
+/node_modules
