@@ -214,19 +214,23 @@ router.post('/register', (req, res) => {
 
     const key_one = crypto.randomBytes(256).toString('hex').substr(158, 12);
     const key_two = crypto.randomBytes(256).toString('base64').substr(168, 12);
-    const key_for_verify = key_one + key_two;
-    //TODO : emailKey에 /가 있을 경우 페이지 요청을 받을 때 /를 경로로 인식해서 404페이지가 나오는 문제가 있음. emailKey를 발급하고 DB에 넣기 전에 한번 검사해야됨. 2019-12-19
+    let key_for_verify = key_one + key_two;
+
+    //인증 키에 /가 있을 경우 URL에서 경로로 인식을 해서 404에러가 발생하는 문제를 해결하기 위해 /를 사전에 치환(S는 아무 의미 없음)
+    key_for_verify = key_for_verify.replace('\/','S');
 
     crypto.pbkdf2(data.password, 'salt is very salty', 132184, 64, 'sha512', (err, key) => {
         connection.query('INSERT INTO table_user VALUES (0,?,?,?,?,0,0,?,now())', [data.name, data.nickname, data.email, key.toString('base64'), key_for_verify],
-            function (err) {
+             (err) => {
                 if (err) {
                     console.log('err : ' + err);
+                }else{
+                    //회원가입시 에러가 안 나면 인증 메일을 발송
+                    utils.sendMail(data.email, key_for_verify, req);
                 }
             });
     });
-    // TODO : 회원가입 완료를 한 후 이메일이 발송되게 해야함. 회원가입에서 에러가 나도 이메일로 인증 메일을 보내버림. 2019-12-19
-    utils.sendMail(data.email, key_for_verify, req);
+
 
     req.session.nickname = data.nickname;
     req.session.email = data.email;
