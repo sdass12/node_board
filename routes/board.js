@@ -217,14 +217,14 @@ router.post('/register', (req, res) => {
     let key_for_verify = key_one + key_two;
 
     //인증 키에 /가 있을 경우 URL에서 경로로 인식을 해서 404에러가 발생하는 문제를 해결하기 위해 /를 사전에 치환(S는 아무 의미 없음)
-    key_for_verify = key_for_verify.replace('\/','S');
+    key_for_verify = key_for_verify.replace('\/', 'S');
 
     crypto.pbkdf2(data.password, 'salt is very salty', 132184, 64, 'sha512', (err, key) => {
         connection.query('INSERT INTO table_user VALUES (0,?,?,?,?,0,0,?,now())', [data.name, data.nickname, data.email, key.toString('base64'), key_for_verify],
-             (err) => {
+            (err) => {
                 if (err) {
                     console.log('err : ' + err);
-                }else{
+                } else {
                     //회원가입시 에러가 안 나면 인증 메일을 발송
                     utils.sendMail(data.email, key_for_verify, req);
                 }
@@ -243,9 +243,12 @@ router.post('/register', (req, res) => {
 router.get('/confirmEmail/:key', (req, res) => {
     const key = req.params.key;
     //TODO : 인증이 완료됐건 안 됐건 이메일 인증이 완료됐다는 페이지가 노출됨. 페이지를 렌더링할 때 boolean 값을 하나 같이 보내서 이메일 인증 여부를 보여줘야 됨. 2019-12-19
-    connection.query('UPDATE table_user SET email_verified = 1 WHERE email_key = ?', [key], function (err) {
+
+
+    connection.query('UPDATE table_user SET email_verified = 1 WHERE email_key = ?', [key], (err) => {
         if (err) {
             console.log('err : ' + err);
+            res.render('', {session: req.session});
         } else {
             req.session.access = 1;
             res.render('emailConfirmSuccess', {session: req.session});
@@ -263,7 +266,7 @@ router.get('/afterRegister', function (req, res) {
 router.post('/nicknameCheck', function (req, res) {
     const data = req.body.data;
 
-    connection.query('SELECT user_nickname from table_user WHERE user_nickname = ?', [data], function (err, result) {
+    connection.query('SELECT user_nickname from table_user WHERE user_nickname = ?', [data], (err, result) => {
         if (result.length === 0) {
             const output = true;
             res.send({result: output})
@@ -292,13 +295,14 @@ router.post('/emailCheck', function (req, res) {
 /* GET Info Page */
 router.get('/info', (req, res) => {
     const session = req.session;
-
-    connection.query('SELECT * FROM table_user WHERE user_nickname = ?', [session.nickname], function (err, result) {
+    if(!session.nickname){
+        res.render('alertAndRedirect', {alert:"로그인 시간이 만료됐습니다.", url: "/login"})
+    }
+    connection.query('SELECT * FROM table_user WHERE user_nickname = ?', [session.nickname], (err, result) => {
         if (err) {
             console.log('err : ' + err);
         }
         res.render('info', {result: result[0], session: session})
-
     })
 });
 
@@ -306,11 +310,13 @@ router.get('/info', (req, res) => {
 router.get('/resendMail', (req, res) => {
     const nickname = req.session.nickname;
 
-    connection.query('SELECT substr(last_resend,1,4) AS YEAR, substr(last_resend,6,2) AS MONTH, substr(last_resend,9) AS DAY FROM table_user WHERE user_nickname=?',
+    connection.query('SELECT substr(last_resend,1,4) AS `YEAR`, substr(last_resend,6,2) AS `MONTH`, substr(last_resend,9) AS `DAY` FROM table_user WHERE user_nickname=?',
         [nickname], (err, result) => {
             if (err) {
                 console.log('err : ' + err);
             }
+            console.log(result[0]);
+
 
             const year = result[0].YEAR;
             const month = result[0].MONTH;
@@ -325,17 +331,28 @@ router.get('/resendMail', (req, res) => {
             const diffDay = nowDate.diff(lastDate, 'days');
             console.log(diffDay);
 
-            //TODO : 하루 이상 차이가 나면 이메일 재인증을 해주고 lastday를 오늘로 바꿔주는 쿼리를 날림. 차이가 안 나면 경고창을 띄우고 리턴.
             if (diffDay >= 1) {
-                console.log('하루이상 차이남.')
-
+                console.log('하루이상 차이남.');
+                connection.query('SELECT user_email, email_key from table_user where user_nickname = ?', [nickname], (err, result) => {
+                    if (err) {
+                        console.log("err : " + err);
+                    }
+                    const user_email = result[0].user_email;
+                    const email_key = result[0].email_key;
+                    utils.sendMail(user_email, email_key, req);
+                });
+                connection.query('UPDATE table_user SET last_resend = now() where user_nickname=?',[nickname],(err)=>{
+                    if(err){
+                        console.log("err" + err);
+                    }
+                });
+                res.render('alertAndRedirect',{alert: '메일을 재전송했습니다.', url: '/info'});
             } else {
                 console.log('오늘 시도했음.')
+                res.render('alertAndRedirect',{alert: '이미 오늘 재전송을 했습니다..', url: '/info'});
             }
-
         })
 });
-
 router.get('/sucesession', (req, res) => {
 
     //TODO : 회원탈퇴를 눌렀을 때 회원탈퇴 의사를 한 번 더 확인한 후 회원탈퇴 조치. 회원 탈퇴를 컬럼 삭제를 할지 데이터만 암호화 할지는 고민해봐야 됨.
