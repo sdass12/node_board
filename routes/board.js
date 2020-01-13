@@ -315,24 +315,18 @@ router.get('/resendMail', (req, res) => {
             if (err) {
                 console.log('err : ' + err);
             }
-            console.log(result[0]);
 
 
             const year = result[0].YEAR;
             const month = result[0].MONTH;
             const day = result[0].DAY;
 
-            console.log(year + month + day);
             const lastDate = moment([year, month - 1, day]);
             const nowDate = moment();
 
-            console.log(lastDate);
-            console.log(nowDate);
             const diffDay = nowDate.diff(lastDate, 'days');
-            console.log(diffDay);
 
             if (diffDay >= 1) {
-                console.log('하루이상 차이남.');
                 connection.query('SELECT user_email, email_key from table_user where user_nickname = ?', [nickname], (err, result) => {
                     if (err) {
                         console.log("err : " + err);
@@ -348,7 +342,6 @@ router.get('/resendMail', (req, res) => {
                 });
                 res.render('alertAndRedirect',{alert: '메일을 재전송했습니다.', url: '/info'});
             } else {
-                console.log('오늘 시도했음.')
                 res.render('alertAndRedirect',{alert: '이미 오늘 재전송을 했습니다..', url: '/info'});
             }
         })
