@@ -51,7 +51,10 @@ router.get('/list/:page', (req, res, next) => {
     const page_list_size = 10; //페이지 리스트 10개
     let limit = null; //limit 변수
     let totalPageCount = 0; //전체 게시물 개수
+    console.log(req.query.option);
+    console.log(req.query.keyword);
     const session = req.session;
+    //TODO : sql을 검색 쿼리 스트링이 있을 경우 where을 추가해서 select을 해서 그 결과를 리스트로 뿌려줘야 됨. - 2020-01-16
     connection.query('SELECT count(*) AS cnt from table_board', (err, result) => {
         if (err) {
             console.log('err : ' + err);
@@ -295,15 +298,16 @@ router.post('/emailCheck', function (req, res) {
 /* GET Info Page */
 router.get('/info', (req, res) => {
     const session = req.session;
-    if(!session.nickname){
-        res.render('alertAndRedirect', {alert:"로그인 시간이 만료됐습니다.", url: "/login"})
+    if (!session.nickname) {
+        res.render('alertAndRedirect', {alert: "로그인 시간이 만료됐습니다.", url: "/login"})
+    } else {
+        connection.query('SELECT * FROM table_user WHERE user_nickname = ?', [session.nickname], (err, result) => {
+            if (err) {
+                console.log('err : ' + err);
+            }
+            res.render('info', {result: result[0], session: session})
+        })
     }
-    connection.query('SELECT * FROM table_user WHERE user_nickname = ?', [session.nickname], (err, result) => {
-        if (err) {
-            console.log('err : ' + err);
-        }
-        res.render('info', {result: result[0], session: session})
-    })
 });
 
 /* GET resendMail Page */
@@ -335,20 +339,27 @@ router.get('/resendMail', (req, res) => {
                     const email_key = result[0].email_key;
                     utils.sendMail(user_email, email_key, req);
                 });
-                connection.query('UPDATE table_user SET last_resend = now() where user_nickname=?',[nickname],(err)=>{
-                    if(err){
+                connection.query('UPDATE table_user SET last_resend = now() where user_nickname=?', [nickname], (err) => {
+                    if (err) {
                         console.log("err" + err);
                     }
                 });
-                res.render('alertAndRedirect',{alert: '메일을 재전송했습니다.', url: '/info'});
+                res.render('alertAndRedirect', {alert: '메일을 재전송했습니다.', url: '/info'});
             } else {
-                res.render('alertAndRedirect',{alert: '이미 오늘 재전송을 했습니다..', url: '/info'});
+                res.render('alertAndRedirect', {alert: '이미 오늘 재전송을 했습니다..', url: '/info'});
             }
         })
 });
 router.get('/sucesession', (req, res) => {
-
+    connection.query('')
     //TODO : 회원탈퇴를 눌렀을 때 회원탈퇴 의사를 한 번 더 확인한 후 회원탈퇴 조치. 회원 탈퇴를 컬럼 삭제를 할지 데이터만 암호화 할지는 고민해봐야 됨.
 });
 
+router.get('/qrcode', (req, res) => {
+    res.render('scanner');
+});
+
+router.get('/qrcode2', (req, res) => {
+    res.render('index');
+});
 module.exports = router;

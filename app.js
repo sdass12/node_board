@@ -25,7 +25,7 @@ app.use(session({
     resave: false,
     saveUninitialized: true,
     cookie: {
-        maxAge: 1000 * 60 * 60 //쿠기 유효기간 1시간
+        maxAge: 1000 * 60 * 60 * 24 //쿠기 유효기간 24시간
     }
 }));
 
